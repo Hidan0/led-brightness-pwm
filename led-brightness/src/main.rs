@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Result};
 use embedded_svc::http::Method;
+use embedded_svc::io::Write;
 use embedded_svc::wifi::{AccessPointConfiguration, AuthMethod, ClientConfiguration};
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_hal::ledc::config::TimerConfig;
@@ -79,12 +80,26 @@ fn main() -> Result<()> {
 "#,
             driver_get.lock().unwrap().get_duty()
         );
-        let mut response = req.into_ok_response()?;
-        response.write(html.as_bytes())?;
+        let mut res = req.into_ok_response()?;
+        res.write_all(html.as_bytes())?;
         Ok(())
     })?;
 
-    info!("Max duty: {}", max_duty);
+    // CROS
+    server.fn_handler("/brightness", Method::Options, |req| {
+        let _ = req.into_response(
+            200,
+            Some("OK"),
+            &[
+                ("Access-Control-Allow-Origin", "*"),
+                ("Access-Control-Allow-Methods", "GET, PUT"),
+                ("Access-Control-Allow-Headers", "Content-Type"),
+            ],
+        )?;
+
+        Ok(())
+    })?;
+
     let driver_put = driver.clone();
     server.fn_handler("/brightness", Method::Put, move |req| {
         let params: Vec<&str> = req.uri().split('?').collect();
@@ -100,6 +115,12 @@ fn main() -> Result<()> {
                     .lock()
                     .unwrap()
                     .set_duty(value * max_duty / 100)?;
+
+                let _ = req.into_response(
+                    204,
+                    Some("No Content"),
+                    &[("Access-Control-Allow-Origin", "*")],
+                )?;
             } else {
                 info!("Value {} is out of range", value);
             }
