@@ -1,0 +1,24 @@
+@use "./variables";
+
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200&display=swap");
+
+* {
+  padding: 0px;
+  margin: 0px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: variables.$surface0;
+  color: variables.$text;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.container {
+  width: min(100% - 2rem, 800px);
+  margin-inline: auto;
+}
