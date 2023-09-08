@@ -20,6 +20,7 @@ const handleChange = async () => {
 <template>
   <div class="s-wrapper">
     <Led class="led" :brightness="brightness.toString()" />
+    <span class="slider-value">{{ sliderValue }}</span>
     <input
       class="slider"
       type="range"
@@ -44,6 +45,12 @@ const handleChange = async () => {
     width: 5rem;
     height: 6.25rem;
     margin: 1rem auto;
+  }
+
+  .slider-value {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin: 0 auto;
   }
 
   .slider {
