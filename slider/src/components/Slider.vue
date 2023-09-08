@@ -18,8 +18,8 @@ const handleChange = async () => {
 </script>
 
 <template>
-  <Led :brightness="brightness" />
   <div class="s-wrapper">
+    <Led class="led" :brightness="brightness.toString()" />
     <input
       class="slider"
       type="range"
@@ -35,14 +35,16 @@ const handleChange = async () => {
 <style lang="scss">
 @use "@/assets/scss/variables";
 
-.led {
-  width: 5rem;
-  background-color: variables.$red;
-}
-
 .s-wrapper {
   display: flex;
   justify-content: center;
+  flex-flow: column;
+
+  .led {
+    width: 5rem;
+    height: 6.25rem;
+    margin: 1rem auto;
+  }
 
   .slider {
     width: 20rem;
