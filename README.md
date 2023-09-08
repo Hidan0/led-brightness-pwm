@@ -6,7 +6,7 @@ This project demonstrates how to use an ESP32C3 to control the brightness of an 
 
 This project incorporates a web application built with Vue.js to facilitate LED brightness adjustment.
 
-<img src="./webapp.png" alt="Demo" style="zoom:60%;" />
+<img src="./webapp.png" alt="Demo" style="width: 35%;" />
 
 ## Overview
 
@@ -31,7 +31,7 @@ The web server exposes the following endpoints:
   ```json
   {
       "max": "<max duty>",
-      "current": "<current duty"
+      "current": "<current duty>"
   }
   ```
 
@@ -54,7 +54,7 @@ To run it you need to:
   $ yarn install
   ```
 
-- Set `BOARD_IP` in `./src/components/Slider.vue`;
+- Set `BOARD_IP` in `./src/components/Slider.vue` with the IP shown in the logs;
 
 - Start the app:
 
