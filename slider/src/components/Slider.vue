@@ -1,20 +1,33 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-// import axios from "axios";
+import axios from "axios";
 import Led from "@/components/Led.vue";
 
 const brightness = ref(0);
 const sliderValue = computed(() => `${brightness.value}%`);
 
-// const BOARD_IP = "192.168.1.17";
+const BOARD_IP = "192.168.1.17";
+
+const instance = axios.create({ baseURL: `http://${BOARD_IP}` });
 
 const handleChange = async () => {
   try {
-    // await axios.put(`http://${BOARD_IP}/brightness?${brightness.value}`);
+    await instance.put(`/brightness?${brightness.value}`);
   } catch (error: any) {
     console.log(error.message);
   }
 };
+
+const fetchCurrentBrightness = async () => {
+  try {
+    const res = await instance.get("/brightness");
+    brightness.value = Math.round((res.data.current / res.data.max) * 100);
+  } catch (error: any) {
+    console.log("Can not get current brightness due to: " + error.message);
+  }
+};
+
+fetchCurrentBrightness();
 </script>
 
 <template>
