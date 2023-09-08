@@ -65,23 +65,27 @@ fn main() -> Result<()> {
 
     let driver_get = driver.clone();
     server.fn_handler("/brightness", Method::Get, move |req| {
-        let html = format!(
+        let current_duty = driver_get.lock().unwrap().get_duty();
+        let mut res = req.into_response(
+            200,
+            Some("OK"),
+            &[
+                ("Content-Type", "application/json"),
+                ("Access-Control-Allow-Origin", "*"),
+            ],
+        )?;
+
+        let json = format!(
             r#"
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>esp-rs web server</title>
-    </head>
-    <body>
-        {}
-    </body>
-</html>
-"#,
-            driver_get.lock().unwrap().get_duty()
+        {{
+            "max": {},
+            "current": {}
+        }}
+        "#,
+            max_duty, current_duty
         );
-        let mut res = req.into_ok_response()?;
-        res.write_all(html.as_bytes())?;
+
+        res.write_all(json.as_bytes())?;
         Ok(())
     })?;
 
