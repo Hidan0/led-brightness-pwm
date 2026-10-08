@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Hidan0 <48904232+Hidan0@users.noreply.github.com>"]
 edition = "2021"
 resolver = "2"
-# rust-version = "1.66"
+rust-version = "1.74"
 
 [profile.release]
 opt-level = "s"

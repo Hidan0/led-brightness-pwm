@@ -3,8 +3,8 @@ target = "riscv32imc-esp-espidf"
 
 [target.riscv32imc-esp-espidf]
 linker = "ldproxy"
-runner = "espflash flash -b 115200 -p /dev/ttyACM0 --monitor" 
-rustflags = ["-C", "default-linker-libraries"]
+runner = "espflash flash -B 115200 -p /dev/ttyACM0 --monitor" 
+rustflags = ["-C", "default-linker-libraries", "--cfg", "espidf_time32"] # ESP-IDF 4.x: 32-bit time_t
 
 [unstable]
 build-std = ["std", "panic_abort"]
@@ -13,3 +13,5 @@ build-std = ["std", "panic_abort"]
 ESP_IDF_VERSION = { value = "tag:v4.4.4" } 
 ESP_IDF_TOOLS_INSTALL_DIR = { value = "global" }
 
+# See setup.sh
+LIBCLANG_PATH = { value = ".embuild/libclang", relative = true }

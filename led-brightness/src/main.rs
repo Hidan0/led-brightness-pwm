@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Result};
+use embedded_svc::http::server::{Connection, HandlerResult, Request};
 use embedded_svc::http::Method;
 use embedded_svc::io::Write;
 use embedded_svc::wifi::{AccessPointConfiguration, AuthMethod, ClientConfiguration};
@@ -89,7 +90,7 @@ fn main() -> Result<()> {
         Ok(())
     })?;
 
-    // CROS
+    // CORS preflight
     server.fn_handler("/brightness", Method::Options, |req| {
         let _ = req.into_response(
             200,
@@ -106,31 +107,35 @@ fn main() -> Result<()> {
 
     let driver_put = driver.clone();
     server.fn_handler("/brightness", Method::Put, move |req| {
-        let params: Vec<&str> = req.uri().split('?').collect();
+        let param = req.uri().split_once('?').map(|(_, q)| q.to_owned());
 
-        if params.len() < 2 {
-            info!("No params provided");
-        }
-
-        if let Ok(value) = params[1].parse::<u32>() {
-            if (0..=100).contains(&value) {
-                info!("Updating duty to {}%", value);
-                driver_put
-                    .lock()
-                    .unwrap()
-                    .set_duty(value * max_duty / 100)?;
-
-                let _ = req.into_response(
-                    204,
-                    Some("No Content"),
-                    &[("Access-Control-Allow-Origin", "*")],
-                )?;
-            } else {
+        let value = match param.as_deref().map(str::parse::<u32>) {
+            Some(Ok(value)) if value <= 100 => value,
+            Some(Ok(value)) => {
                 info!("Value {} is out of range", value);
+                return bad_request(req);
             }
-        } else {
-            info!("Can not parse {}", params[1]);
-        }
+            Some(Err(_)) => {
+                info!("Can not parse {}", param.unwrap_or_default());
+                return bad_request(req);
+            }
+            None => {
+                info!("No params provided");
+                return bad_request(req);
+            }
+        };
+
+        info!("Updating duty to {}%", value);
+        driver_put
+            .lock()
+            .unwrap()
+            .set_duty(value * max_duty / 100)?;
+
+        req.into_response(
+            204,
+            Some("No Content"),
+            &[("Access-Control-Allow-Origin", "*")],
+        )?;
 
         Ok(())
     })?;
@@ -138,6 +143,16 @@ fn main() -> Result<()> {
     loop {
         FreeRtos::delay_ms(20);
     }
+}
+
+fn bad_request<C: Connection>(req: Request<C>) -> HandlerResult {
+    req.into_response(
+        400,
+        Some("Bad Request"),
+        &[("Access-Control-Allow-Origin", "*")],
+    )?;
+
+    Ok(())
 }
 
 fn wifi(
@@ -195,6 +210,10 @@ fn wifi(
             ..Default::default()
         },
     ))?;
+
+    // Cap TX power to 8.5 dBm (unit: 0.25 dBm): at full power some ESP32-C3
+    // boards fail authentication (auth -> init (200)) on any AP
+    esp_idf_sys::esp!(unsafe { esp_idf_sys::esp_wifi_set_max_tx_power(34) })?;
 
     info!("Connecting wifi...");
 

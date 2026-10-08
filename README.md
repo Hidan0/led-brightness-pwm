@@ -2,7 +2,7 @@
 
 ## Description
 
-This project demonstrates how to use an ESP32C3 to control the brightness of an LED remotely via a Wi-Fi network. The brightness of the LED is controlled via *Pulse Width Modulation* (**PWM**).
+This project demonstrates how to use an ESP32C3 to control the brightness of an LED remotely via a Wi-Fi network. The brightness of the LED is controlled via _Pulse Width Modulation_ (**PWM**).
 
 This project incorporates a web application built with Vue.js to facilitate LED brightness adjustment.
 
@@ -12,7 +12,7 @@ This project incorporates a web application built with Vue.js to facilitate LED 
 
 ### LED Control
 
-The led controller can be found under `led-brightness/`. 
+The led controller can be found under `led-brightness/`.
 
 First of all you need to set `wifi_ssid` and `wifi_pwd`, to do so create a copy of `cfg.toml.example` and rename it to `cfg.toml`, then set your Wi-Fi data.
 
@@ -23,6 +23,12 @@ wifi_ssid = "FBI Surveillance Van"
 wifi_pwd = "hunter2"
 ```
 
+ESP-IDF v4.4.4 needs Python 3.11 and libclang 15 on a modern host. With [`uv`](https://docs.astral.sh/uv/) installed, `./setup.sh` sets both up under `.embuild/`, then build with:
+
+```bash
+$ PATH="$PWD/.embuild/bin:$PATH" cargo build
+```
+
 The web server exposes the following endpoints:
 
 - `GET`: `/brightness`
@@ -30,13 +36,14 @@ The web server exposes the following endpoints:
 
   ```json
   {
-      "max": "<max duty>",
-      "current": "<current duty>"
+      "max": <max duty>,
+      "current": <current duty>
   }
   ```
 
 - `PUT`: `/brightness?<val>` where: $0 \leq$ `val` $\leq 100$
-  used to set LED brightness
+  used to set LED brightness; returns `204` on success, `400` if `val` is
+  missing, not a number or out of range
 - `OPTIONS`: `/brightness`
   used for CORS
 

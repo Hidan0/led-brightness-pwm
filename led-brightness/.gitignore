@@ -1,5 +1,5 @@
 /.vscode
 /.embuild
 /target
-/Cargo.lock
 /cfg.toml
+/components_esp32c3.lock
